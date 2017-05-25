@@ -5,18 +5,21 @@
  *      Author: 293359
  */
 
-//#include "Vertex.h"
+//Import everything I need
 #include <iostream>
 #include <string.h>
 #include <vector>
 
 using namespace std;
 
+//Structure Vertex: Holds a label (the character label for the vertex that the user sees) and a true ID (the ID that the program uses)
 struct Vertex {
 	char label;
 	int trueID;
 };
 
+
+//Function prototypes
 void addVertex(vector<Vertex*>* graph, Vertex* newVertex);
 void addEdge(Vertex* firstNode, Vertex* secondNode, int weight, int** adjacencyMatrix);
 void removeVertex(vector<Vertex*>* graph, int** adjacencyMatrix);
@@ -24,8 +27,9 @@ void removeEdge(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix);
 char findNode(vector<Vertex*>* graph, int IDTarget);
 int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength);
 
-
+//Main method, does everything!
 int main() {
+	//Initialize adjacency matrix as empty (all values -1)
 	int** adjacencyMatrix = new int*[20];
 	for (int i = 0; i < 20; i++) {
 		adjacencyMatrix[i] = new int[20];
@@ -35,15 +39,16 @@ int main() {
 			adjacencyMatrix[i][j] = -1;
 		}
 	}
+
+	//Initialize vector for holding the Vertices of the graph
 	vector<Vertex*> graph;
 	vector<Vertex*>* graphPtr;
 	graphPtr = &graph;
 	bool running = true;
+	//While the program is running, prompt the user for what they want to do.
 	while (running) {
 		char choose;
-		for (int i = 0; i < graphPtr->size(); i++) {
-			cout << graphPtr->at(i)->label << " " << graphPtr->at(i)->trueID << endl;
-		}
+		//Figure out what the user wants to do via their input, then do it
 		cout << "Would you like to \"ADD\" something, \"REMOVE\" something, \"DISPLAY\" the adjacency matrix, \"SEARCH\" for a path between two nodes, or \"QUIT\" the program?" << endl << "?: ";
 		cin >> choose;
 		cin.ignore(256, '\n');
@@ -200,9 +205,8 @@ int main() {
 
 	return 0;
 }
-
+//Add a vertex to the graph.
 void addVertex(vector<Vertex*>* graph, Vertex* newVertex) {
-	cout << newVertex->label << endl;
 	bool whatExists[20];
 	for (int i = 0; i < 20; i++) {
 		whatExists[i] = false;
@@ -214,10 +218,12 @@ void addVertex(vector<Vertex*>* graph, Vertex* newVertex) {
 			labelAlreadyUsed = true;
 		}
 	}
+	//Check whether the label that the user assigned to the Vertex has already been used
 	if (labelAlreadyUsed) {
 		cout << "A vertex with that label already exists in the graph! Please try again." << endl;
 		return;
 	}
+	//Check if the adjacency matrix isn't already full
 	for (int i = 0; i < 20; ++i) {
 		if (whatExists[i] == false) {
 			graph->push_back(newVertex);
@@ -228,17 +234,20 @@ void addVertex(vector<Vertex*>* graph, Vertex* newVertex) {
 	}
 	cout << "Fatal: Graph is already full! (Limit: 20 vertices)" << endl;
 }
-
+//Adds an edge to the graph between two existing Vertices
 void addEdge(Vertex* firstNode, Vertex* secondNode, int weight, int** adjacencyMatrix) {
 	int firstIndex = firstNode->trueID;
 	int secondIndex = secondNode->trueID;
+	//Set the weight to the proper position in the adjacency matrix
 	adjacencyMatrix[firstIndex][secondIndex] = weight;
 	cout << "Edge successfully added from vertex " << firstNode->label << " to vertex " << secondNode->label << "." << endl;
 }
+//Remove a vertex
 void removeVertex(vector<Vertex*>* graph, int** adjacencyMatrix) {
 	cout << "Enter the label of the vertex to be removed." << endl << "Label: ";
 	char choose;
 	cin >> choose;
+	//Find which Vertex they are targeting, if it exists
 	Vertex* target = NULL;
 	int targetIndex = 0;
 	for (int i = 0; i < graph->size(); i++) {
@@ -251,6 +260,7 @@ void removeVertex(vector<Vertex*>* graph, int** adjacencyMatrix) {
 		cout << "A vertex with that label does not exist. Please try again." << endl;
 		return;
 	}
+	//Reset all values that involve the target Vertex within the adjacency matrix
 	int index = target->trueID;
 	for (int i = 0; i < 20; i++) {
 		adjacencyMatrix[i][index] = -1;
@@ -260,14 +270,15 @@ void removeVertex(vector<Vertex*>* graph, int** adjacencyMatrix) {
 	graph->erase(graph->begin() + targetIndex);
 	delete target;
 }
-
+//Removes an edge from the graph
 void removeEdge(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix) {
 	int firstIndex = firstNode->trueID;
 	int secondIndex = secondNode->trueID;
+	//Reset the value for that edge in the adjacency matrix
 	adjacencyMatrix[firstIndex][secondIndex] = -1;
 	cout << "Edge successfully removed from vertex " << firstNode->label << " to vertex " << secondNode->label << "." << endl;
 }
-
+//Find the character label of the Vertex with the given ID
 char findNode(vector<Vertex*>* graph, int IDTarget) {
 	for (int i = 0; i < graph->size(); i++) {
 		if (graph->at(i)->trueID == IDTarget) {
@@ -276,18 +287,23 @@ char findNode(vector<Vertex*>* graph, int IDTarget) {
 	}
 	return ' ';
 }
-
+//Find the shortest path length between two nodes, if there is one
 int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength) {
 	bool foundNew = true;
+	//While the previous iteration lead to a new shorter path being found between the first node and ANY other node...
 	while (foundNew) {
 		foundNew = false;
 		for (int i = 0; i < 20; i++) {
+			//For each node where the length from first node to that node is existant (i.e. > -1), check paths from that node to other nodes and update lengths
 			if (shortestLength[i] > -1) {
 				for (int j = 0; j < 20; j++) {
+					//For each path from that node to other nodes...
 					if (adjacencyMatrix[i][j] > -1) {
 						int testPath = shortestLength[i] + adjacencyMatrix[i][j];
+						//If the new path formed is shorter than the current value of path from first node to that node, set it as the shortest path from first node to that node
 						if (shortestLength[j] == -1 || testPath < shortestLength[j]) {
 							shortestLength[j] = testPath;
+							//Since we found something new, foundNew is true!
 							foundNew = true;
 						}
 					}
@@ -295,5 +311,6 @@ int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* 
 			}
 		}
 	}
+	//Return the shortest path value calculated between first node and second node
 	return shortestLength[secondNode->trueID];
 }
