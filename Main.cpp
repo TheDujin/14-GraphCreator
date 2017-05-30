@@ -25,7 +25,7 @@ void addEdge(Vertex* firstNode, Vertex* secondNode, int weight, int** adjacencyM
 void removeVertex(vector<Vertex*>* graph, int** adjacencyMatrix);
 void removeEdge(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix);
 char findNode(vector<Vertex*>* graph, int IDTarget);
-int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength);
+int findPath(vector<Vertex*>* graph, Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength, char** shortestPath);
 
 //Main method, does everything!
 int main() {
@@ -182,13 +182,18 @@ int main() {
 				continue;
 			}
 			int* shortestLength = new int[20];
+			char** shortestPath = new char*[20];
 			for (int i = 0; i < 20; i++) {
 				shortestLength[i] = -1;
+				shortestPath[i] = new char[22];
+				shortestPath[i][0] = findNode(graphPtr, i);
+				shortestPath[i][1] = '\0';
 			}
 			shortestLength[first->trueID] = 0;
-			int length = findPath(first, second, adjacencyMatrix, shortestLength);
+			int length = findPath(graphPtr, first, second, adjacencyMatrix, shortestLength, shortestPath);
 			if (length > -1) {
 				cout << "The shortest path between vertex " << firstChoose << " and vertex " << secondChoose << " is " << length << "." << endl;
+				cout << "The path is " << shortestPath[second->trueID] << "." << endl;
 			}
 			else {
 				cout << "There is no path between vertex " << firstChoose << " and vertex " << secondChoose << "." << endl;
@@ -288,7 +293,7 @@ char findNode(vector<Vertex*>* graph, int IDTarget) {
 	return ' ';
 }
 //Find the shortest path length between two nodes, if there is one
-int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength) {
+int findPath(vector<Vertex*>* graph, Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* shortestLength, char** shortestPath) {
 	bool foundNew = true;
 	//While the previous iteration lead to a new shorter path being found between the first node and ANY other node...
 	while (foundNew) {
@@ -304,6 +309,30 @@ int findPath(Vertex* firstNode, Vertex* secondNode, int** adjacencyMatrix, int* 
 						if (shortestLength[j] == -1 || testPath < shortestLength[j]) {
 							shortestLength[j] = testPath;
 							//Since we found something new, foundNew is true!
+//							char temp[22];
+							int k = 0;
+//							for (k = 0; k < 22; k++) {
+//								if (shortestPath[j][k] != '\0') {
+//									temp[k] = shortestPath[j][k];
+//								}
+//								else break;
+//							}
+//							temp[k] = '\0';
+							for (k = 0; k < 22; k++) {
+								if (shortestPath[i][k] != '\0') {
+									shortestPath[j][k] = shortestPath[i][k];
+								}
+								else break;
+							}
+							int save = k;
+//							for (k = 0; k < 22; k++) {
+//								if (temp[k] != '\0') {
+//									shortestPath[j][k + save] = temp[k];
+//								}
+//								else break;
+//							}
+							shortestPath[j][save] = findNode(graph, j);
+							shortestPath[j][save + 1] = '\0';
 							foundNew = true;
 						}
 					}
